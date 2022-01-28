@@ -11,14 +11,23 @@ services:
       - POSTGRES_PASSWORD=postgres
   web:
     build: .
-    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    command: bash -c "python manage.py migrate && gunicorn btre.wsgi:application --bind 0.0.0.0:8000"
     volumes:
       - .:/code
-    ports:
-      - "8000:8000"
+    expose:
+      - 8000
     environment:
       - POSTGRES_NAME=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     depends_on:
       - db
+  nginx:
+    build: ./nginx
+    container_name: nginx
+    volumes:
+      - ./static/:/btre/static/
+    ports:
+      - 80:80
+    depends_on:
+      - web
